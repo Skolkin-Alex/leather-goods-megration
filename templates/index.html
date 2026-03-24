@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leather Goods Migration - Interactive Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div>
+                    <h1 class="title" data-i18n="title">🗺️ LEATHER GOODS MIGRATION</h1>
+                    <p class="subtitle" data-i18n="subtitle">Migration of Leather Goods Worldwide</p>
+                </div>
+                <div class="lang-switcher">
+                    <button class="lang-btn" data-lang="ru">RU</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="stats_pins">Пинов:</span>
+                    <span class="stat-value" id="stat-pins">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="stats_products">Изделий:</span>
+                    <span class="stat-value" id="stat-products">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="stats_countries">Стран:</span>
+                    <span class="stat-value" id="stat-countries">0</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="main">
+            <div class="map-container">
+                <div id="map"></div>
+                <button class="btn-add-pin-trigger" title="Добавить пин">+</button>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p data-i18n="footer">&copy; 2024 Leather Goods Migration. All pins are saved and visible to all visitors.</p>
+        </footer>
+    </div>
+
+    <div id="add-pin-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2 id="add-pin-title" style="text-align: center; color: var(--black); margin-bottom: 20px; font-size: 20px; text-transform: uppercase; letter-spacing: 2px;" data-i18n="add_pin_title">📍 Добавить свой пин</h2>
+
+            <form id="pin-form" enctype="multipart/form-data">
+                <div class="form-group info">
+                    <p id="click-instruction" data-i18n="click_instruction">👆 Нажмите на карту, чтобы выбрать местоположение</p>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="label_coords">Координаты</label>
+                    <div class="coord-display">
+                        <span id="coord-latitude">-</span> | <span id="coord-longitude">-</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="city" name="city" placeholder="Город" data-i18n-placeholder="input_city" required maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="country" name="country" placeholder="Страна" data-i18n-placeholder="input_country" required maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="product_name" name="product_name" placeholder="Название изделия" data-i18n-placeholder="input_product_name" required maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="product_description" name="product_description" placeholder="Описание (опционально)" data-i18n-placeholder="input_product_description" maxlength="500">
+                </div>
+
+                <div class="form-group">
+                    <label for="image" data-i18n="label_image">📸 Фото изделия</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="image" name="image" accept="image/*">
+                        <span id="file-name" data-i18n="file_choose">Выберите файл</span>
+                    </div>
+                    <small data-i18n="file_info">Макс 5MB, JPG/PNG/GIF</small>
+                </div>
+
+                <button type="submit" class="btn btn-submit" data-i18n="btn_add_pin">✨ Добавить пин на карту</button>
+                <p class="form-message" id="form-message"></p>
+            </form>
+
+            <div class="info-section">
+                <h3 data-i18n="info_title">💡 Советы</h3>
+                <ul>
+                    <li data-i18n="info_tip1">Нажмите на карту первым делом</li>
+                    <li data-i18n="info_tip2">Заполните все поля</li>
+                    <li data-i18n="info_tip3">Загрузите красивое фото</li>
+                    <li data-i18n="info_tip4">Отправьте - готово!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="pin-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='map.js') }}"></script>
+</body>
+</html>
