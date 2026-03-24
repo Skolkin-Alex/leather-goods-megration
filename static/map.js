@@ -1,12 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const map = L.map('map').setView([20, 0], 2);
+  const map = L.map('map', {
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    boxZoom: false,
+    keyboard: false,
+    touchZoom: false
+  }).setView([20, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
-
-  // Disable scroll wheel zoom to prevent UI breaking
-  map.scrollWheelZoom.disable();
 
   const statPins = document.getElementById('stat-pins');
   const statProducts = document.getElementById('stat-products');
