@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
+  // Disable scroll wheel zoom to prevent UI breaking
+  map.scrollWheelZoom.disable();
+
   const statPins = document.getElementById('stat-pins');
   const statProducts = document.getElementById('stat-products');
   const statCountries = document.getElementById('stat-countries');
