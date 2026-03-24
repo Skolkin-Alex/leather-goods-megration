@@ -1,16 +1,84 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const map = L.map('map', {
-    dragging: false,
-    scrollWheelZoom: false,
-    doubleClickZoom: false,
-    boxZoom: false,
-    keyboard: false,
-    touchZoom: false
-  }).setView([20, 0], 2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  const canvas = document.getElementById('pixel-map');
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+
+  // 8-bit world map pixel data (simplified)
+  const mapData = [
+    // Ocean (light gray)
+    ...Array(800 * 200).fill('#d3d3d3'),
+    // Continents (dark gray/black)
+    // Europe
+    ...Array(50).fill('#696969'), ...Array(50).fill('#000000'), ...Array(50).fill('#696969'),
+    // Asia
+    ...Array(100).fill('#000000'), ...Array(100).fill('#696969'),
+    // Africa
+    ...Array(80).fill('#696969'), ...Array(40).fill('#000000'),
+    // Americas
+    ...Array(120).fill('#000000'), ...Array(80).fill('#696969'),
+    // Australia
+    ...Array(40).fill('#696969'), ...Array(20).fill('#000000'),
+    // Fill rest with ocean
+    ...Array(800 * 200 - 50 - 50 - 50 - 100 - 100 - 80 - 40 - 120 - 80 - 40 - 20).fill('#d3d3d3')
+  ];
+
+  function drawMap() {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const index = y * width + x;
+        ctx.fillStyle = mapData[index] || '#d3d3d3';
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+
+  // Animation: slow pixel twinkling
+  function animate() {
+    const twinklingPixels = [];
+    for (let i = 0; i < 10; i++) {
+      const x = Math.floor(Math.random() * width);
+      const y = Math.floor(Math.random() * height);
+      twinklingPixels.push({x, y});
+    }
+
+    twinklingPixels.forEach(pixel => {
+      const index = pixel.y * width + pixel.x;
+      const originalColor = mapData[index];
+      ctx.fillStyle = originalColor === '#000000' ? '#ffffff' : '#000000';
+      ctx.fillRect(pixel.x, pixel.y, 1, 1);
+    });
+
+    setTimeout(() => {
+      twinklingPixels.forEach(pixel => {
+        const index = pixel.y * width + pixel.x;
+        ctx.fillStyle = mapData[index];
+        ctx.fillRect(pixel.x, pixel.y, 1, 1);
+      });
+    }, 500);
+  }
+
+  drawMap();
+  setInterval(animate, 2000); // Twinkle every 2 seconds
+
+  // Rest of the code remains the same for modals and functionality
+  const statPins = document.getElementById('stat-pins');
+  const statProducts = document.getElementById('stat-products');
+  const statCountries = document.getElementById('stat-countries');
+
+  let selectedLatLng = null;
+  const pinModal = document.getElementById('pin-modal');
+  const addPinModal = document.getElementById('add-pin-modal');
+  const pinForm = document.getElementById('pin-form');
+  const coordLatitude = document.getElementById('coord-latitude');
+  const coordLongitude = document.getElementById('coord-longitude');
+  const formMessage = document.getElementById('form-message');
+  const clickInstruction = document.getElementById('click-instruction');
+  const fileInput = document.getElementById('image');
+  const fileNameLabel = document.getElementById('file-name');
+
+  // ... (keep the rest of the code for modals, stats, etc.)
+
 
   const statPins = document.getElementById('stat-pins');
   const statProducts = document.getElementById('stat-products');
@@ -136,25 +204,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderPin(pin) {
-    const coords = [pin.latitude, pin.longitude];
-    const marker = L.marker(coords).addTo(map);
-    let popupHtml = `<strong>${pin.product_name}</strong><br><em>${pin.city}, ${pin.country}</em>`;
-    if (pin.product_description) {
-      popupHtml += `<br>${pin.product_description}`;
-    }
-    if (pin.image_url) {
-      popupHtml += `<br><img src="${pin.image_url}" alt="${pin.product_name}"/>`;
-    }
-    marker.bindPopup(popupHtml);
-    marker.on('click', () => {
-      showPinDetail(pin);
-    });
+    // For pixel map, we can draw a small marker on canvas
+    const x = ((pin.longitude + 180) / 360) * width;
+    const y = ((90 - pin.latitude) / 180) * height;
+    ctx.fillStyle = '#ff0000'; // Red pin
+    ctx.fillRect(x - 2, y - 2, 4, 4);
   }
 
   async function loadPins() {
     try {
       const response = await fetch('/api/pins');
       const pins = await response.json();
+      drawMap(); // Redraw base map
       pins.forEach(renderPin);
       updateStats(pins);
     } catch (error) {
@@ -187,10 +248,16 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.remove('show');
   }
 
-  map.on('click', (e) => {
+  canvas.addEventListener('click', (e) => {
     if (!addPinModal.classList.contains('show')) return;
-    selectedLatLng = e.latlng;
-    coordLatitude.textContent = selectedLatLng.lat.toFixed(6);
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    // Simulate lat/lng based on pixel position
+    const lat = (height / 2 - y) / (height / 2) * 90;
+    const lng = (x - width / 2) / (width / 2) * 180;
+    selectedLatLng = { lat, lng };
+    coordLatitude.textContent = lat.toFixed(6);
     coordLongitude.textContent = selectedLatLng.lng.toFixed(6);
     clickInstruction.textContent = i18n[currentLang].click_instruction_ready;
   });
